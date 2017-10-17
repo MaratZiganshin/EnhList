@@ -25,12 +25,14 @@ template <typename T>
 typename BidiLinkedList<T>::Node* 
     BidiLinkedList<T>::Node::insertAfterInternal(Node* insNode)
 {
-    // here we use "this" keyword for enhancing the fact we deal with curent node!
     Node* afterNode = this->_next;      // an element, which was after node
-    // !...
-    // Здесь вырезана часть кода. Ее необходимо реализовать
-    // См. документацию к методу insertAfterInternal() и insertAfter()
-    // !...
+    this->_next = insNode;
+    insNode->_prev = this;
+    if (afterNode)
+    {
+        insNode->_next = afterNode;
+        afterNode->_prev = insNode;
+    }
     return insNode;
 }
 
@@ -50,9 +52,13 @@ BidiLinkedList<T>::~BidiLinkedList()
 template <typename T>
 void BidiLinkedList<T>::clear()
 {
-    // !...
-    // Метод необходимо реализовать целиком!
-    // !...
+    Node* temp = _head;
+    while (temp)
+    {
+        Node* del = temp;
+        temp = temp->_next;
+        delete del;
+    }
 }
 
 template <typename T>
@@ -78,9 +84,7 @@ template <typename T>
 typename BidiLinkedList<T>::Node* 
     BidiLinkedList<T>::getLastNode() const
 {
-    // !...
-    // Метод необходимо реализовать целиком!
-    // !...
+    return _tail;
 }
 
 
@@ -90,12 +94,11 @@ typename BidiLinkedList<T>::Node*
 {
     Node* newNode = new Node(val);
 
-    // !...
-    // Здесь вырезана часть кода. Ее необходимо реализовать
-    // !...
+    Node * temp = insertNodeAfter(getLastNode(), newNode);
+    _tail = newNode;
 
     // inserts after last node, size if going to e invalidated there
-    return insertNodeAfter(getLastNode(), newNode);
+    return temp;
 }
 
 
@@ -166,11 +169,27 @@ void BidiLinkedList<T>::cutNodes(Node* beg, Node* end)
 {
     if (!beg || !end)
         throw std::invalid_argument("Either `beg` or `end` is nullptr");
-    // !...
-    // Здесь вырезана часть кода. Ее необходимо реализовать
-    // !...
+    if (!end->_next && !beg->_prev)
+    {
+        _head = nullptr;
+        _tail = nullptr;
+    }
+    else if (!end->_next)
+    {
+        _tail = beg->_prev;
+        beg->_prev->_next = nullptr;
+    }
+    else if (!beg->_prev)
+    {
+        _head = end->_next;
+        end->_next->_prev = nullptr;
+    }
+    else
+    {
+        beg->_prev->_next = end->_next;
+        end->_next->_prev = beg->_prev;
+    }
     invalidateSize();
-
 }
 
 
@@ -178,9 +197,31 @@ template <typename T>
 typename BidiLinkedList<T>::Node* 
     BidiLinkedList<T>::cutNode(Node* node)
 {
-    // !...
-    // Метод необходимо реализовать целиком!
-    // !...
+    if (!node)
+        throw std::invalid_argument("`node` is nullptr");
+    if (!node->_next && !node->_prev)
+    {
+        _head = nullptr;
+        _tail = nullptr;
+        return node;
+    }
+    else if (!node->_next)
+    {
+        _tail = node->_prev;
+        node->_prev->_next = nullptr;
+    }
+    else if (!node->_prev)
+    {
+        _head = node->_next;
+        node->_next->_prev = nullptr;
+    }
+    else
+    {
+        node->_prev->_next = node->_next;
+        node->_next->_prev = node->_prev;
+    }
+    invalidateSize();
+    return node;
 }
 
 

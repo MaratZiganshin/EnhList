@@ -14,6 +14,7 @@
 
 #ifndef XI_ENHLINKEDLIST_BIDILIST_H_
 #define XI_ENHLINKEDLIST_BIDILIST_H_
+#define IWANNAGET10POINTS
 
 #include <cstddef>      // size_t
 
@@ -111,7 +112,7 @@ public:
 
 public:
     /** \brief Default constructor */
-    BidiLinkedList() : _head(nullptr), _size(NO_SIZE) {};
+    BidiLinkedList() : _head(nullptr),_tail(nullptr),_size(NO_SIZE) {};
 
     /** \brief Destructor
      *
@@ -328,6 +329,8 @@ protected:
      *  Since we have both direct and reverse links, we need no more to store inconvenient prehead
      */
     Node* _head;
+
+    Node* _tail;
 
     /** \brief Caches a size of a list. If no size has been calculated, stores NO_SIZE value */
     std::size_t _size;

@@ -21,6 +21,7 @@
 
 
 #include "bidi_linked_list.h"
+#include <iostream>
 
 
 /** \brief Type alias for a list of integers. */
@@ -38,10 +39,21 @@ void demo1()
 //int _tmain(int argc, _TCHAR* argv[])
 int main()
 {
-    demo1();
+    //demo1();
+    BidiLinkedList<int> a;
+    for (int i = 0; i < 5; i++)
+        a.appendEl(i);
+    BidiLinkedList<int>::Node* test1 = a.getHeadNode();
+    BidiLinkedList<int>::Node* test2 = a.getLastNode()->getPrev()->getPrev();
+    a.cutNodes(test1, test2);
 
-
-
+    BidiLinkedList<int>::Node* out = a.getHeadNode();
+    while (out)
+    {
+        std::cout << out->getValue() << std::endl;
+        out = out->getNext();
+    }
+    system("pause");
     return 0;
 }
 
