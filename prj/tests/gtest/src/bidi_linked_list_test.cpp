@@ -18,7 +18,7 @@
 
 // !!! uncomment this if you'd like to get the highest mark !!!
 // раскомментируй эту строчку, если хочется получить оценочку повыше
-// #define IWANNAGET10POINTS 
+#define IWANNAGET10POINTS 
 
 
 
@@ -150,7 +150,7 @@ TEST(BidiListInt, insertAfter1)
 /** \brief Helper function clears memory for given chain of nodes */
 void clearNodes(IntBidiListNode* beg, IntBidiListNode* end)
 {
-    while (beg)
+    while (beg != end)
     {
         IntBidiListNode* nxt = beg->getNext();
         delete beg;

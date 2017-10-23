@@ -74,9 +74,14 @@ size_t BidiLinkedList<T>::getSize()
 template <typename T>
 void BidiLinkedList<T>::calculateSize()
 {
-    // !...
-    // Метод необходимо реализовать целиком!
-    // !...
+    Node* temp = _head;
+    size_t s = 0;
+    while (temp)
+    {
+        s++;
+        temp = temp->_next;
+    }
+    _size = s;
 }
 
 
@@ -97,7 +102,6 @@ typename BidiLinkedList<T>::Node*
     Node * temp = insertNodeAfter(getLastNode(), newNode);
     _tail = newNode;
 
-    // inserts after last node, size if going to e invalidated there
     return temp;
 }
 
@@ -120,26 +124,60 @@ typename BidiLinkedList<T>::Node*
 
     // if last node is nullptr itself, it means that no elements in the list at all
     if (!node)
+    {
         _head = insNode;
+        _tail = insNode;
+    }
     else
+    {
+        if (!node->_next)
+            _tail = insNode;
         node->insertAfterInternal(insNode);
-
-
-    invalidateSize();
+    }
+        
+    if (_size != NO_SIZE)
+        _size++;
 
     return insNode;
 }
 
 
 
-// !...
-// Здесь должна быть реализация метода BidiLinkedList<T>::insertNodesAfter().
-// В отличие от других методов, здесь не представлен даже заголовок, поэтому придется потрудиться!
-// !...
+template <typename T>
+void BidiLinkedList<T>::insertNodesAfter(Node* node, Node* beg, Node* end)
+{
+    if (!beg) 
+        throw std::invalid_argument("`beg` is nullptr");
+    if (!end)
+        throw std::invalid_argument("`end` is nullptr");
+    if (beg->_prev || end->_next)
+        throw std::invalid_argument("`beg` or `end` has siblings. It seems chain isn't free");
+    if (!node)
+        node = getLastNode();
+    if (!node)
+    {
+        _head = beg;
+        _tail = end;
+    }
+    else if (!node->_next)
+    {
+        node->_next = beg;
+        beg->_prev = node;
+        _tail = end;
+    }
+    else
+    {
+        end->_next = node->_next;
+        beg->_prev = node;
+        node->_next->_prev = end;
+        node->_next = beg;
+
+    }
+
+    invalidateSize();
+}
 
 
-// Следующий фрагмент кода перестанет быть "блеклым" и станет "ярким", как только вы определите
-// макрос IWANNAGET10POINTS, взяв тем самым на себя повышенные обязательства
 #ifdef IWANNAGET10POINTS
 
 
@@ -147,18 +185,70 @@ template <typename T>
 typename BidiLinkedList<T>::Node*
     BidiLinkedList<T>::insertNodeBefore(Node* node, Node* insNode)
 {
-    // !...
-    // Реализуй метод, если хочешь получит оценку повыше!
-    // !...
+    if (!insNode)
+        throw std::invalid_argument("`insNode` is nullptr");
+
+    // check if a node is alone
+    if (insNode->_next || insNode->_prev)
+        throw std::invalid_argument("`insNode` has siblings. It seems it isn't free");
+
+
+    if (!node)
+        node = getHeadNode();
+
+    // if last node is nullptr itself, it means that no elements in the list at all
+    if (!node)
+    {
+        _head = insNode;
+        _tail = insNode;
+    }
+    else if (!node->_prev)
+    {
+        _head = insNode;
+        insNode->_next = node;
+        node->_prev = insNode;
+    }
+    else 
+        node->_prev->insertAfterInternal(insNode);
+
+    if (_size != NO_SIZE)
+        _size++;
+
+    return insNode;
 }
 
 
 template <typename T>
 void BidiLinkedList<T>::insertNodesBefore(Node* node, Node* beg, Node* end)
 {
-    // !...
-    // Реализуй метод, если хочешь получит оценку повыше!
-    // !...
+    if (!beg)
+        throw std::invalid_argument("`beg` is nullptr");
+    if (!end)
+        throw std::invalid_argument("`end` is nullptr");
+    if (beg->_prev || end->_next)
+        throw std::invalid_argument("`beg` or `end` has siblings. It seems chain isn't free");
+    if (!node)
+        node = getHeadNode();
+    if (!node)
+    {
+        _head = beg;
+        _tail = end;
+    }
+    else if (!node->_prev)
+    {
+        node->_prev = end;
+        end->_next = node;
+        _head = beg;
+    }
+    else
+    {
+        end->_next = node;
+        beg->_prev = node->_prev;
+        node->_prev->_next = beg;
+        node->_prev = end;
+    }
+
+    invalidateSize();
 }
 
 #endif // IWANNAGET10POINTS
@@ -178,16 +268,20 @@ void BidiLinkedList<T>::cutNodes(Node* beg, Node* end)
     {
         _tail = beg->_prev;
         beg->_prev->_next = nullptr;
+        beg->_prev = nullptr;
     }
     else if (!beg->_prev)
     {
         _head = end->_next;
         end->_next->_prev = nullptr;
+        end->_next = nullptr;
     }
     else
     {
         beg->_prev->_next = end->_next;
         end->_next->_prev = beg->_prev;
+        beg->_prev = nullptr;
+        end->_next = nullptr;
     }
     invalidateSize();
 }
@@ -209,16 +303,20 @@ typename BidiLinkedList<T>::Node*
     {
         _tail = node->_prev;
         node->_prev->_next = nullptr;
+        node->_prev = nullptr;
     }
     else if (!node->_prev)
     {
         _head = node->_next;
         node->_next->_prev = nullptr;
+        node->_next = nullptr;
     }
     else
     {
         node->_prev->_next = node->_next;
         node->_next->_prev = node->_prev;
+        node->_prev = nullptr;
+        node->_next = nullptr;
     }
     invalidateSize();
     return node;
@@ -232,9 +330,14 @@ typename BidiLinkedList<T>::Node*
     if (!startFrom)
         return nullptr;
 
-    // !...
-    // Здесь вырезана часть кода. Ее необходимо реализовать
-    // !...
+    Node* temp = startFrom;
+    while (temp)
+    {
+        if (temp->getValue() == val)
+            return temp;
+        temp = temp->_next;
+    }
+    
 
     return nullptr;     // not found
 }
@@ -252,20 +355,29 @@ typename BidiLinkedList<T>::Node**
     Node** res = nullptr;
     size = 0;
     
+    Node* temp = startFrom;
+
     while (startFrom)
     {
-        // !...
-        // Здесь вырезана часть кода. Ее необходимо реализовать
-        // !...
+        if (startFrom->_val == val)
+            size++;
+        startFrom = startFrom->_next;
     }
+
+    if (size > 0)
+        res = new Node*[size];
     
-    // recreates array if created
+    int index = 0;
     if (res)
-    {
-        // !...
-        // А здесь вырезана еще одна часть кода. И ее тоже необходимо реализовать
-        // !...
-    }
+        while (temp)
+        {
+            if (temp->_val == val)
+            {
+                res[index] = temp;
+                index++;
+            }
+            temp = temp->_next;
+        }
 
     return res;
 }
@@ -278,9 +390,39 @@ template <typename T>
 typename BidiLinkedList<T>::Node**  
 BidiLinkedList<T>::cutAll(Node* startFrom, const T& val, int& size)
 {
-    // !...
-    // Реализуй метод, если хочешь получит оценку повыше!
-    // !...
+    if (!startFrom)
+        return nullptr;
+
+    // try not to use any standard containers. create an array only when found a first occurence  
+    Node** res = nullptr;
+    size = 0;
+
+    Node* temp = startFrom;
+
+    while (startFrom)
+    {
+        if (startFrom->_val == val)
+            size++;
+        startFrom = startFrom->_next;
+    }
+        
+    if (size > 0)
+        res = new Node*[size];
+
+    int index = 0;
+    if (res)
+        while (temp)
+            if (temp->_val == val)
+            {
+                Node* cut = temp;
+                temp = temp->_next;
+                res[index] = cutNode(cut);
+                index++;
+            }
+            else
+                temp = temp->_next;
+
+    return res;
 }
 
 #endif // IWANNAGET10POINTS
